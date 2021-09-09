@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"fmt"
 	"math/rand"
-	"sync"
 	"time"
 )
 
@@ -75,31 +74,24 @@ func main() {
 	pq[0] = task
 	heap.Init(&pq)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
 	jobs := make(chan Task)
 
 	go executeTask(jobs)
 	go executeTask(jobs)
 
 	/*Below go function is meant to generate the tasks with random priority*/
-	go func() {
-		for i := 1; i <= 100; i++ {
-			// Insert a new item and then modify its priority.
-			task := Task{
-				value:    RandStringRunes(4),
-				priority: RandPriority(),
-			}
-
-			fmt.Printf("input:- %.2d:%s \n", task.priority, task.value)
-			heap.Push(&pq, task)
-
-			// Popping will lead to removal of task as per the priority
-			jobs <- heap.Pop(&pq).(Task)
+	for i := 1; i <= 100; i++ {
+		// Insert a new item and then modify its priority.
+		task := Task{
+			value:    RandStringRunes(4),
+			priority: RandPriority(),
 		}
-		wg.Done()
-	}()
 
-	wg.Wait()
+		fmt.Printf("input:- %.2d:%s \n", task.priority, task.value)
+		heap.Push(&pq, task)
+
+		// Popping will lead to removal of task as per the priority
+		jobs <- heap.Pop(&pq).(Task)
+	}
+
 }
